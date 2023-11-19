@@ -8,3 +8,4 @@ Jerry Gutierrez
 
 Maxx Parcesepe
 -Set up up server/database
+-Style changes
