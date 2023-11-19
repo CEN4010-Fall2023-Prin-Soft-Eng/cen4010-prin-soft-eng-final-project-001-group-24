@@ -9,3 +9,8 @@ Jerry Gutierrez
 Maxx Parcesepe
 -Set up up server/database
 -Style changes
+
+Joshua Fredrick
+-set up map api 
+-data and time page 
+
