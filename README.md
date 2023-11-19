@@ -15,6 +15,6 @@ Joshua Fredrick
 -data and time page 
 
 steven pierre
--
--
+-Integrate Map api and Database
+- home page
 
