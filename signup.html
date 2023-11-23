@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
     <link rel="stylesheet" href="styles.css">
+    <script type="text/javascript" src="https://npmcdn.com/parse/dist/parse.min.js"></script>
+    <script src="app.js"></script>
 </head>
 <body>
     <div class="container">
@@ -25,9 +27,17 @@
 
             <p>Already have an account? <a href="index.html">Login</a></p>
         </div>
-    </div>
 
-    <script src="https://www.parsecdn.com/js/parse-1.19.0.min.js"></script>
-    <script src="signup.js"></script>
+        <!-- Add the login form (dummy or actual) -->
+        <form id="loginForm" style="display: none;">
+            <label for="loginUsername">Username:</label>
+            <input type="text" id="loginUsername" name="loginUsername" required>
+
+            <label for="loginPassword">Password:</label>
+            <input type="password" id="loginPassword" name="loginPassword" required>
+
+            <button type="submit">Login</button>
+        </form>
+    </div>
 </body>
 </html>
