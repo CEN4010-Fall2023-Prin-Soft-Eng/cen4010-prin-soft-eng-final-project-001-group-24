@@ -1,0 +1,27 @@
+{
+  "name": "finalprojectserver",
+  "version": "1.0.0",
+  "description": "A Location Description App for the City of Boca",
+  "main": "FinalProjectServer.js",
+  "scripts": {
+    "start": "node FinalProjectServer.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "body-parser": "^1.19.0",
+    "parse": "^4.17.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CEN4010-Fall2023-Prin-Soft-Eng/cen4010-prin-soft-eng-final-project-final-project-001-group-24.git"
+  },
+  "homepage": "https://finalprojectserver.herokuapp.com",
+  "bugs": {
+    "url": "https://github.com/CEN4010-Fall2023-Prin-Soft-Eng/cen4010-prin-soft-eng-final-project-final-project-001-group-24/issues"
+  },
+  "author": ""
+}
