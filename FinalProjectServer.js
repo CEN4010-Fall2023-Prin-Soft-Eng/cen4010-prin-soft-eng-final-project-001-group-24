@@ -40,6 +40,12 @@ const options = {
 
 const swaggerSpec = swaggerJSDoc(options);
 
+
+// Define a route for the root path
+app.get('/', (req, res) => {
+    res.send('Welcome to the Final Project Server!');
+  });
+
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 /**
  * @swagger
