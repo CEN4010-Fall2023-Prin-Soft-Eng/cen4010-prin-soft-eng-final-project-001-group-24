@@ -7,7 +7,7 @@ const fs = require('fs');
 const glob = require('glob');
 
 const app = express();
-const PORT = process.env.PORT || 5678;
+const PORT = process.env.PORT || 5678
 
 // Initialize Parse
 Parse.initialize("qmiVcBHkyOi90FYFNs6r7e4J5beskXYTkqe85Qqm", "zgAXSRve1aW88Ck7dfO06emiorlN5KXmOrtYFuho");
@@ -29,7 +29,7 @@ const swaggerDefinition = {
   },
   servers: [
     {
-      url: `http://localhost:${PORT}`,
+      url: `http://localhost:5678`,
       description: 'Local server',
     },
   ],
@@ -43,56 +43,120 @@ const options = {
 const swaggerSpec = swaggerJSDoc(options);
 
 
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+
+
+
 // Define a route for the root path
 app.get('/', (req, res) => {
-    res.send('Welcome to the Final Project Server!');
-  });
+  res.send('Welcome to the Final Project Server!');
+});
 
-app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+
 /**
  * @swagger
- * tags:
- *   name: Authentication
- *   description: Authentication endpoints
+ * /login:
+ *   post:
+ *     tags:
+ *       - Authentication
+ *     summary: Log in a user or create a new user with appointment details
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: User created successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               identifier: '2023-12-04T12:30:00Z'
+ *               message: 'User created successfully'
+ *       200:
+ *         description: User logged in successfully with appointment details
+ *         content:
+ *           application/json:
+ *             example:
+ *               date: 'Appointment Date'
+ *               time: 'Appointment Time'
+ *       401:
+ *         description: Invalid username or password
+ *         content:
+ *           text/plain:
+ *             example: 'Invalid username or password'
+ *       500:
+ *         description: Error creating user or retrieving details
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: 'Error creating user'
  */
-
-/**
-* @swagger
-* /login:
-*   post:
-*     tags:
-*       - Authentication
-*     summary: Log in a user
-*     requestBody:
-*       required: true
-*       content:
-*         application/json:
-*           schema:
-*             type: object
-*             properties:
-*               username:
-*                 type: string
-*               password:
-*                 type: string
-*     responses:
-*       200:
-*         description: User logged in successfully
-*       500:
-*         description: Error logging in
-*/
-app.post('/login', (req, res) => {
- const { username, password } = req.body;
-
- Parse.User.logIn(username, password)
-   .then((user) => {
-     console.log("User logged in:", user);
-     res.redirect('/home.html');
-   })
-   .catch((error) => {
-     console.error("Error logging in:", error);
-     res.status(500).send('Error logging in');
-   });
-});
+ app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+  
+    // Check if the user with the given login information exists
+    const userExists = checkUserExists(username, password);
+  
+    if (!userExists) {
+      // If the user doesn't exist, create a new user with date and time for appointment
+      const identifier = new Date().toISOString();
+      const date = "Appointment Date"; // Replace with the actual date
+      const time = "Appointment Time"; // Replace with the actual time
+  
+      const user = {
+        identifier,
+        username,
+        password,
+        date,
+        time
+      };
+  
+      const str = JSON.stringify(user, null, 2);
+      const dir = 'users';
+  
+      fs.access(dir, (err) => {
+        if (err) {
+          fs.mkdir(dir, (err) => {
+            if (err) {
+              console.error(err);
+            } else {
+              console.log('Directory created successfully!');
+            }
+          });
+        } else {
+          console.log('Directory already exists!');
+        }
+  
+        fs.writeFile(`users/${identifier}.json`, str, (err) => {
+          if (err) {
+            console.error('Error creating user:', err);
+            return res.status(500).send({ message: 'Error creating user' });
+          } else {
+            console.log('User created successfully');
+            return res.status(201).send({ identifier, message: 'User created successfully' });
+          }
+        });
+      });
+    } else {
+      // User exists, implement the logic to retrieve date and time for appointment
+      const user = getUserDetails(username, password); // Implement this function
+      if (user) {
+        // User found, return date and time for appointment
+        return res.status(200).send({ date: user.date, time: user.time });
+      } else {
+        // User not found, handle accordingly
+        return res.status(401).send('Invalid username or password');
+      }
+    }
+  });
+  
 
 /**
 * @swagger
@@ -131,153 +195,15 @@ app.post('/signup', (req, res) => {
  user.signUp()
    .then((user) => {
      console.log("User signed up:", user);
-     res.redirect('/home.html');
+     res.redirect('/index.html');
    })
    .catch((error) => {
-     console.error("Error signing up:", error);
      res.status(500).send('Error signing up');
    });
 });
 
-/**
-* @swagger
-* tags:
-*   name: Favorites
-*   description: User favorites endpoints
-*/
 
-/**
-* @swagger
-* /addFavorite:
-*   post:
-*     tags:
-*       - Favorites
-*     summary: Add a favorite
-*     requestBody:
-*       required: true
-*       content:
-*         application/json:
-*           schema:
-*             type: object
-*             properties:
-*               userId:
-*                 type: string
-*               itemId:
-*                 type: string
-*     responses:
-*       200:
-*         description: Favorite added successfully
-*       500:
-*         description: Error adding favorite
-*/
-app.post('/addFavorite', (req, res) => {
- const { userId, itemId } = req.body;
 
- const Favorite = Parse.Object.extend('Favorite');
- const favorite = new Favorite();
- favorite.set('userId', userId);
- favorite.set('itemId', itemId);
-
- favorite.save()
-   .then(() => {
-     console.log('Favorite added successfully');
-     res.send('Favorite added successfully');
-   })
-   .catch((error) => {
-     console.error('Error adding favorite:', error);
-     res.status(500).send('Error adding favorite');
-   });
-});
-
-/**
-* @swagger
-* /deleteFavorite:
-*   post:
-*     tags:
-*       - Favorites
-*     summary: Delete a favorite
-*     requestBody:
-*       required: true
-*       content:
-*         application/json:
-*           schema:
-*             type: object
-*             properties:
-*               userId:
-*                 type: string
-*               itemId:
-*                 type: string
-*     responses:
-*       200:
-*         description: Favorite deleted successfully
-*       500:
-*         description: Error deleting favorite
-*/
-app.post('/deleteFavorite', (req, res) => {
- const { userId, itemId } = req.body;
-
- const Favorite = Parse.Object.extend('Favorite');
- const query = new Parse.Query(Favorite);
-
- query.equalTo('userId', userId);
- query.equalTo('itemId', itemId);
-
- query.find()
-   .then((favorites) => {
-     if (favorites.length > 0) {
-       return favorites[0].destroy();
-     } else {
-       throw new Error('Favorite not found');
-     }
-   })
-   .then(() => {
-     console.log('Favorite deleted successfully');
-     res.send('Favorite deleted successfully');
-   })
-   .catch((error) => {
-     console.error('Error deleting favorite:', error);
-     res.status(500).send('Error deleting favorite');
-   });
-});
-
-/**
-* @swagger
-* /listFavorites:
-*   get:
-*     tags:
-*       - Favorites
-*     summary: List all favorites
-*     parameters:
-*       - name: userId
-*         in: query
-*         description: ID of the user
-*         required: true
-*         schema:
-*           type: string
-*     responses:
-*       200:
-*         description: List of user favorites
-*       500:
-*         description: Error listing favorites
-*/
-app.get('/listFavorites', (req, res) => {
- const userId = req.query.userId;
-
- const Favorite = Parse.Object.extend('Favorite');
- const query = new Parse.Query(Favorite);
-
- query.equalTo('userId', userId);
-
- query.find()
-   .then((favorites) => {
-     console.log('Favorites retrieved successfully');
-     res.json(favorites);
-   })
-   .catch((error) => {
-     console.error('Error retrieving favorites:', error);
-     res.status(500).send('Error retrieving favorites');
-   });
-});
 
 /**
 * @swagger
@@ -345,10 +271,10 @@ app.get('/listItems', async (req, res) => {
 
     const itemList = items.map(item => ({
       id: item.id,
-      name: item.get('name'),  // Assuming there's a field named 'name' in your 'Item' class
-      date: item.get('date'),  // Assuming there's a field named 'date' in your 'Item' class
-      time: item.get('time'),  // Assuming there's a field named 'time' in your 'Item' class
-      // Add more fields as needed
+      name: item.get('name'),  
+      date: item.get('date'),  
+      time: item.get('time'),  
+      
     }));
 
     res.status(200).json(itemList);
@@ -494,6 +420,71 @@ app.get('/listTourSetups', (req, res) => {
 
   return res.status(200).send({ setups: arr });
 });
+
+/**
+ * Endpoint to get details of a user by username
+ * @swagger
+ * /getUserDetails/{username}:
+ *   get:
+ *     tags:
+ *       - Authentication
+ *     summary: Get user details
+ *     parameters:
+ *       - name: username
+ *         in: path
+ *         description: Username of the user
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User details
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Error getting user details
+ */
+app.get('/getUserDetails/:username', (req, res) => {
+  const username = req.params.username;
+
+  // Example: Retrieving details for a user from a Parse class named 'User'
+  const User = Parse.Object.extend('_User');
+  const userQuery = new Parse.Query(User);
+  userQuery.equalTo('username', username);
+
+  userQuery.first()
+    .then((user) => {
+      if (user) {
+        console.log('User details retrieved successfully');
+        res.json({
+          username: user.get('username'),
+          email: user.get('password'),
+          // Add other user details as needed
+        });
+      } else {
+        res.status(404).send({ message: 'User not found' });
+      }
+    })
+    .catch((error) => {
+      res.status(500).send({ message: 'Error getting user details' });
+    });
+});
+
+
+
+function checkUserExists(username, password) {
+  console.log("checkUserExists");
+  const listOfUsers = glob.sync("users/*.json");
+
+  for (let i = 0; i < listOfUsers.length; i++) {
+    let user = JSON.parse(fs.readFileSync(listOfUsers[i], 'utf8'));
+    if (user.username === username && user.password === password) {
+      return true;
+    }
+  }
+  return false;
+}
+
 
 //Start the server
   app.listen(5678, () => {
