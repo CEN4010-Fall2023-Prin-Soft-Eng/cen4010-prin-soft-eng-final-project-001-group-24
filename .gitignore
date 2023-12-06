@@ -1,0 +1,10 @@
+# .gitignore
+
+# Node.js
+node_modules/
+
+# macOS
+.DS_Store
+
+# dotenv
+.env
