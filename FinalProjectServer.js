@@ -478,37 +478,6 @@ function checkOverlap(date, time) {
   return false; // No overlap found
 }
 
-function modifyTourDateAndTime(username, newDate, newTime) {
-  try {
-    // Assuming you have a data storage mechanism (e.g., a database) to store user information
-    // Replace the following code with your actual implementation to find the user by username
-
-    // Find the user by username
-    const user = findUserByUsername(username);
-
-    if (!user) {
-      // If the user is not found, return false (modification failed)
-      return false;
-    }
-
-    // Update the user's tour date and time with the new values
-    user.tourDate = newDate;
-    user.tourTime = newTime;
-
-    // Assuming you have a mechanism to save the updated user information
-    // Replace the following code with your actual implementation to save the updated user
-
-    // Save the updated user information
-    saveUpdatedUser(user);
-
-    // Return true to indicate successful modification
-    return true;
-  } catch (error) {
-    // Handle any errors that may occur during the modification process
-    console.error('Error modifying tour date and time:', error);
-    return false;
-  }
-}
 
 // Function to find a user by username
 function findUserByUsername(username) {
