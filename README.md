@@ -11,7 +11,9 @@ The main focus of this app being convience and helpfulness will drive developmen
 
 # Features
 - Login/Signup page for users to set up an account with.
+
 ![Login Page](./Img/Login.png)
+
 ![Signup Page](/Img/Signup.png)
 
 - Scrollable list of Historical Landmarks and information of each piece.
