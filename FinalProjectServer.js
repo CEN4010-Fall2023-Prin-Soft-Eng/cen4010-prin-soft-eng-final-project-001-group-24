@@ -52,13 +52,161 @@ app.get('/', (req, res) => {
   res.send('Welcome to the Final Project Server!');
 });
 
+
+/**
+ * @swagger
+ * /signup:
+ *   post:
+ *     tags:
+ *       - Authentication
+ *     summary: Sign up a new user or modify tour date and time for an existing user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               date:
+ *                 type: string
+ *                 format: date
+ *               time:
+ *                 type: string
+ *                 format: time
+ *               country:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User signed up or tour date and time modified successfully
+ *       400:
+ *         description: Bad request - Duplicate username, password, date, time, or country
+ *       409:
+ *         description: Conflict - Overlapping dates or times
+ *       500:
+ *         description: Internal Server Error - Error signing up or modifying tour date and time
+ */
+app.post('/signup', (req, res) => {
+  const { username, password, name, date, time, country } = req.body;
+
+  // Check if user with the same attributes already exists
+  if (checkUserExists(username, password, date, time, country)) {
+    return res.status(400).send('Bad request - Duplicate username, password, date, time, or country');
+  }
+
+  // Check for overlapping dates or times
+  if (checkOverlap(date, time)) {
+    return res.status(409).send('Conflict - Overlapping dates or times');
+  }
+
+  // If all checks pass, sign up the user
+  const identifier = new Date().toISOString();
+  const user = {
+    identifier,
+    username,
+    password,
+    name,
+    date,
+    time,
+    country
+  };
+
+  const str = JSON.stringify(user, null, 2);
+  const dir = 'users';
+
+  fs.access(dir, (err) => {
+    if (err) {
+      fs.mkdir(dir, (err) => {
+        if (err) {
+          console.error(err);
+        } else {
+          console.log('Directory created successfully!');
+        }
+      });
+    } else {
+      console.log('Directory already exists!');
+    }
+
+    try {
+      fs.mkdirSync('users');
+    } catch (err) {
+      if (err.code !== 'EXIST') {
+        console.error('Error creating directory:', err);
+      }
+    }
+
+    fs.writeFile("users/" + username + ".json", str, (err) => {
+      if (err) {
+        console.error('Error writing to file:', err);
+        return res.status(500).send('Error signing up');
+      } else {
+        return res.status(200).send('User signed up successfully');
+      }
+    });
+  });
+});
+
+// Function to check if a user with the same information exists
+function checkUserExists(username, password, date, time, country) {
+  const userFiles = fs.readdirSync('users');
+  for (const file of userFiles) {
+    if (file.endsWith('.json')) {
+      const userData = JSON.parse(fs.readFileSync(`users/${file}`, 'utf8'));
+      if (
+        userData.username === username &&
+        userData.password === password &&
+        userData.date === date &&
+        userData.time === time &&
+        userData.country === country
+      ) {
+        return true; // User with the same information already exists
+      }
+    }
+  }
+  return false; // No user with the same information found
+}
+
+// Function to check for overlapping dates or times
+function checkOverlap(date, time) {
+  const userFiles = fs.readdirSync('users');
+  const newDateTime = new Date(`${date} ${time}`);
+  
+  for (const file of userFiles) {
+    if (file.endsWith('.json')) {
+      const userData = JSON.parse(fs.readFileSync(`users/${file}`, 'utf8'));
+      
+      // Parse existing user's date and time
+      const existingDateTime = new Date(`${userData.date} ${userData.time}`);
+      
+      // Check for overlapping schedules
+      if (
+        userData.date === date && userData.time === time
+        || newDateTime >= existingDateTime && newDateTime < new Date(existingDateTime.getTime() + yourAppointmentDurationInMilliseconds)
+        || new Date(newDateTime.getTime() + yourAppointmentDurationInMilliseconds) > existingDateTime && newDateTime <= existingDateTime
+      ) {
+        return true; // Overlapping date/time found
+      }
+    }
+  }
+  
+  return false; // No overlapping date/time found
+}
+
+// Define a global variable to store user information temporarily
+let loggedInUser = null;
+
 /**
  * @swagger
  * /login:
  *   post:
  *     tags:
  *       - Authentication
- *     summary: Log in a user or create a new user
+ *     summary: Log in a user
  *     parameters:
  *       - name: username
  *         description: User's username
@@ -80,158 +228,259 @@ app.get('/', (req, res) => {
  *       500:
  *         description: Error logging in
  */
- app.post('/login', (req, res) => {
+app.post('/login', (req, res) => {
     const { username, password } = req.body;
-  
+
     // Check if the user with the given login information exists
     const userExists = checkUserExists(username, password);
-  
-    if (!userExists) {
-      // If the user doesn't exist, create a new user with date and time for appointment
-      const identifier = new Date().toISOString();
-      const date = "Appointment Date"; // Replace with the actual date
-      const time = "Appointment Time"; // Replace with the actual time
-  
-      const user = {
-        identifier,
-        username,
-        password,
-        date,
-        time
-      };
-  
-      const str = JSON.stringify(user, null, 2);
-      const dir = 'users';
-  
-      fs.access(dir, (err) => {
-        if (err) {
-          fs.mkdir(dir, (err) => {
-            if (err) {
-              console.error(err);
-            } else {
-              console.log('Directory already exists!');
-            }
-          });
-        } else {
-          console.log('Directory created successfully!');
-        }
-  
-        fs.writeFile(`users/${identifier}.json`, str, (err) => {
-          if (err) {
-            return res.status(500).send({ message: 'Error creating user' });
-          } else {
-            return res.status(201).send({ identifier, message: 'User created successfully' });
-          }
-        });
-      });
+
+    if (userExists) {
+        // User exists, set the loggedInUser variable
+        loggedInUser = getUserDetails(username, password);
+        return res.status(200).send('Login Successful');
     } else {
-      // User exists, implement the logic to retrieve date and time for appointment
-      const user = getUserDetails(username, password); // Implement this function
-      if (user) {
-        // User found, return date and time for appointment
-        return res.status(200).send({ date: user.date, time: user.time });
-      } else {
-        // User not found, handle accordingly
-        return res.status(401).send('Invalid username or password');
-      }
+        // If the user doesn't exist, create a new user with date and time for appointment
+        const identifier = new Date().toISOString();
+        const date = "Appointment Date"; // Replace with the actual date
+        const time = "Appointment Time"; // Replace with the actual time
+
+        const user = {
+            identifier,
+            username,
+            password,
+            date,
+            time
+        };
+
+        const str = JSON.stringify(user, null, 2);
+        const dir = 'users';
+
+        fs.access(dir, (err) => {
+            if (err) {
+                fs.mkdir(dir, (err) => {
+                    if (err) {
+                        console.error(err);
+                    } else {
+                        console.log('Directory already exists!');
+                    }
+                });
+            } else {
+                console.log('Directory created successfully!');
+            }
+        });
+
+        // Set the loggedInUser variable
+        loggedInUser = user;
+
+        return res.status(200).send('Login Successful');
     }
-  });
+});
+
+/**
+ * @swagger
+ * /logout:
+ *   post:
+ *     tags:
+ *       - Authentication
+ *     summary: Log out the current user
+ *     responses:
+ *       200:
+ *         description: User logged out successfully
+ *       401:
+ *         description: No user is currently logged in
+ */
+app.post('/logout', (req, res) => {
+    if (loggedInUser) {
+        // If a user is logged in, log them out by clearing the loggedInUser variable
+        loggedInUser = null;
+        return res.status(200).send('Logout Successful');
+    } else {
+        // No user is currently logged in
+        return res.status(401).send('No user is currently logged in');
+    }
+});
+
+ 
+
+
+/**
+ * @swagger
+ * /searchUsers:
+ *   get:
+ *     tags:
+ *       - Authentication
+ *     summary: Search for a user by username
+ *     parameters:
+ *       - name: query
+ *         in: query
+ *         description: Username to search for
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User found successfully
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Error searching for the user
+ */
+app.get('/searchUsers', async (req, res) => {
+  try {
+    const query = req.query.query;
+
+    // Read the list of users from the 'users' directory
+    const userFiles = fs.readdirSync('users');
+
+    // Find the user by username
+    const foundUser = userFiles
+      .map(file => {
+        const userData = JSON.parse(fs.readFileSync(`users/${file}`, 'utf8'));
+        return {
+          id: userData.identifier, // Assuming 'identifier' is a unique identifier for users
+          username: userData.username,
+          date: userData.date,
+          time: userData.time,
+          name: userData.name,
+          country: userData.country,
+        };
+      })
+      .find(user => user.username === query);
+
+    if (foundUser) {
+      res.status(200).json(foundUser);
+    } else {
+      res.status(404).send('User not found');
+    }
+  } catch (error) {
+    res.status(500).send('Error searching for the user');
+  }
+});
+
+
+
   
 /**
  * @swagger
- * /signup:
- *   post:
- *     summary: Creates a new person object with all of its attributes.
- *     description: Use this endpoint to create a new person.
+ * /listUsers:
+ *   get:
+ *     tags:
+ *       - Users
+ *     summary: List all users.
+ *     responses:
+ *       200:
+ *         description: Success. An array of users has been retrieved.
+ *       500:
+ *         description: Error. Internal server error occurred.
+ */
+
+let rsp_obj = {};  // Add this line to declare rsp_obj
+
+app.get('/listUsers', function (req, res) {
+  console.log("list users");
+
+  // Read the list of users from the 'users' directory
+  const userFiles = fs.readdirSync('users');
+
+  const userList = userFiles.map(file => {
+    const userData = JSON.parse(fs.readFileSync(`users/${file}`, 'utf8'));
+    return {
+      id: userData.identifier, // Assuming 'identifier' is a unique identifier for users
+      username: userData.username,
+      date: userData.date,
+      time: userData.time,
+      name: userData.name,
+      country: userData.country,
+    };
+  });
+
+  var obj = {};
+  obj.users = userList;
+
+  return res.status(200).send(obj);
+});
+
+
+/**
+ * @swagger
+ * /users/{username}:
+ *   put:
+ *     summary: Update an existing user by username.
+ *     description: Use this endpoint to update an existing user based on their username.
  *     parameters:
  *       - name: username
- *         description: username
- *         in: formData
+ *         description: User's username
+ *         in: path
  *         required: true
  *         schema:
  *           type: string
  *       - name: password
- *         description: password
+ *         description: User's password
  *         in: formData
  *         required: true
  *         schema:
  *           type: string
- *       - name: name
- *         description: name
+ *       - name: date
+ *         description: User's appointment date
  *         in: formData
  *         required: true
  *         schema:
  *           type: string
- *       - name: Date
- *         description: Date
+ *       - name: time
+ *         description: User's appointment time
  *         in: formData
  *         required: true
  *         schema:
  *           type: string
- *       - name: Time
- *         description: Time
+ *       - name: country
+ *         description: User's country
  *         in: formData
  *         required: true
  *         schema:
  *           type: string
- *
  *     responses:
  *       200:
- *         description: User signed up successfully
- *       400:
- *         description: Bad request - Duplicate username, password, date, or time
- *       409:
- *         description: Conflict - Overlapping dates or times
- *       500:
- *         description: Internal Server Error - Error signing up
+ *         description: Error. Unable to update resource.
+ *       201:
+ *         description: Success. The user has been updated.
+ *       404:
+ *         description: Error. The requested resource was not found.
  */
-
-
-app.post('/signup', (req, res) => {
-  const { username, password, name, date, time } = req.body;
-
-  // Check if user with the same attributes already exists
-  if (checkUserExists(username, password, date, time)) {
-    return res.status(400).send('Bad request - Duplicate username, password, date, or time');
-  }
-
-  // Check for overlapping dates or times
-  if (checkOverlap(date, time)) {
-    return res.status(409).send('Conflict - Overlapping dates or times');
-  }
-
-  // If all checks pass, sign up the user
-  const identifier = new Date().toISOString();
-  const user = {
-    identifier,
-    username,
-    password,
-    name,
-    date,
-    time
+app.put('/users/:username', function (req, res) {
+  var username = req.params.username;
+  var filePath = `users/${username}.json`;
+  var obj = {
+    username: req.body.username,
+    password: req.body.password,
+    date: req.body.date,
+    time: req.body.time,
+    country: req.body.country
   };
+  var str = JSON.stringify(obj, null, 2);
 
-  const str = JSON.stringify(user, null, 2);
-  const dir = 'users';
+  // Check if the file exists
+  fs.access(filePath, fs.constants.F_OK, function (err) {
+    var rsp_obj = {};
 
-  fs.access(dir, (err) => {
     if (err) {
-      fs.mkdir(dir, (err) => {
-        if (err) {
-          console.error(err);
-        } else {
-          console.log('Directory created successfully!');
-        }
-      });
-    } else {
-      console.log('Directory already exists!');
+      // Handle case where the file doesn't exist (404)
+      rsp_obj.message = 'error - resource not found';
+      return res.status(404).send(rsp_obj);
     }
 
-    fs.writeFile(`users/${identifier}.json`, str, (err) => {
+    // File exists, update the user information
+    fs.writeFile(filePath, str, function (err) {
       if (err) {
-        return res.status(500).send('Error signing up');
+        // Handle error (update failed)
+        rsp_obj.message = 'error - unable to update resource';
+        return res.status(200).send(rsp_obj);
       } else {
-        return res.status(200).send('User signed up successfully');
+        // Handle success (update successful)
+        rsp_obj = {
+          message: 'successfully updated',
+          user: obj
+        };
+        return res.status(201).send(rsp_obj);
       }
     });
   });
@@ -239,222 +488,28 @@ app.post('/signup', (req, res) => {
 
 
 
-/**
- * @swagger
- * /searchItems:
- *   get:
- *     tags:
- *       - Items
- *     summary: Search items by username, date, time, or name
- *     parameters:
- *       - name: query
- *         in: query
- *         description: Search query (username, date, time, or name)
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Items matching the search query
- *       500:
- *         description: Error searching items
- */
-app.get('/searchItems', async (req, res) => {
-  try {
-    const query = req.query.query;
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Example: Searching items in a Parse class named 'Item' by username, date, time, or name
-    const Item = Parse.Object.extend('Item');
-    const itemQuery = new Parse.Query(Item);
-
-    if (query) {
-      // Search by username, date, time, or name
-      const usernameQuery = new Parse.Query(Item);
-      usernameQuery.matches('username', new RegExp(query, 'i'));
-
-      const dateQuery = new Parse.Query(Item);
-      dateQuery.matches('date', new RegExp(query, 'i'));
-
-      const timeQuery = new Parse.Query(Item);
-      timeQuery.matches('time', new RegExp(query, 'i'));
-
-      const nameQuery = new Parse.Query(Item);
-      nameQuery.matches('name', new RegExp(query, 'i'));
-
-      // Combine the queries using OR operation
-      itemQuery._orQuery([usernameQuery, dateQuery, timeQuery, nameQuery]);
-    }
-
-    const items = await itemQuery.find();
-
-    const itemList = items.map(item => ({
-      id: item.id,
-      name: item.get('name'),  
-      date: item.get('date'),  
-      time: item.get('time'),  
-      username: item.get('username'),
-    }));
-
-    res.status(200).json(itemList);
-  } catch (error) {
-    res.status(500).send('Error searching items');
-  }
-});
-
-  
-/**
- * @swagger
- * /listItems:
- *   get:
- *     tags:
- *       - Items
- *     summary: List all items
- *     responses:
- *       200:
- *         description: List of all items
- *       500:
- *         description: Error listing items
- */
-app.get('/listItems', async (req, res) => {
-  try {
-    const username = req.query.username; // Extract username from query parameters
-
-    // Example: Listing items for a specific user from a Parse class named 'Item'
-    const Item = Parse.Object.extend('Item');
-    const itemQuery = new Parse.Query(Item);
-    
-    if (username) {
-      itemQuery.equalTo('username', username);
-    }
-    
-    const items = await itemQuery.find();
-
-    const itemList = items.map(item => ({
-      id: item.id,
-      name: item.get('name'),  
-      date: item.get('date'),  
-      time: item.get('time'),  
-      username: item.get('username'),
-    }));
-
-    res.status(200).json(itemList);
-  } catch (error) {
-    res.status(500).send('Error listing items');
-  }
-});
-
-/**
- * @swagger
- * /signup:
- *   post:
- *     tags:
- *       - Authentication
- *     summary: Sign up a new user or modify tour date and time for an existing user
- *     requestBody:
- *       in: formData
- *       required: true
- *       content:
- *         application/x-www-form-urlencoded:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *               password:
- *                 type: string
- *               name:
- *                 type: string
- *               date:
- *                 type: string
- *                 format: date
- *               time:
- *                 type: string
- *                 format: time
- *     responses:
- *       200:
- *         description: User signed up or tour date and time modified successfully
- *       400:
- *         description: Bad request - Duplicate username, password, date, or time
- *       409:
- *         description: Conflict - Overlapping dates or times
- *       500:
- *         description: Internal Server Error - Error signing up or modifying tour date and time
- */
-app.post('/signup', (req, res) => {
-  const { username, password, name, date, time } = req.body;
-
-  // Check if user with the same attributes already exists
-  if (checkUserExists(username, password, date, time)) {
-    // Perform logic to modify tour date and time for an existing user
-    if (modifyTourDateAndTime(username, date, time)) {
-      return res.status(200).send('User signed up or tour date and time modified successfully');
-    } else {
-      return res.status(500).send('Error modifying tour date and time');
-    }
-  }
-
-  // Check for overlapping dates or times
-  if (checkOverlap(date, time)) {
-    return res.status(409).send('Conflict - Overlapping dates or times');
-  }
-
-  // If all checks pass, sign up the user
-  const identifier = new Date().toISOString();
-  const user = {
-    identifier,
-    username,
-    password,
-    name,
-    date,
-    time
-  };
-
-  const str = JSON.stringify(user, null, 2);
-  const dir = 'users';
-
-  fs.access(dir, (err) => {
-    if (err) {
-      fs.mkdir(dir, (err) => {
-        if (err) {
-          console.error(err);
-        } else {
-          console.log('Directory created successfully!');
-        }
-      });
-    } else {
-      console.log('Directory already exists!');
-    }
-
-    fs.writeFile(`users/${identifier}.json`, str, (err) => {
-      if (err) {
-        return res.status(500).send('Error signing up');
-      } else {
-        return res.status(200).send('User signed up successfully');
-      }
-    });
-  });
-});
-
-
-
-
-function checkUserExists(username, password) {
+function checkUserExists(username, password, date, time, country) {
   console.log("checkUserExists");
   const listOfUsers = glob.sync("users/*.json");
 
   for (let i = 0; i < listOfUsers.length; i++) {
     let user = JSON.parse(fs.readFileSync(listOfUsers[i], 'utf8'));
-    if ( user.username === username &&
+    if (
+      user.username === username &&
       user.password === password &&
       user.date === date &&
-      user.time === time) {
+      user.time === time &&
+      user.country === country
+    ) {
       return true;
     }
   }
   return false;
 }
 
-// Function to check for overlapping dates or times
+
 function checkOverlap(date, time) {
   // Get all existing user records
   const listOfUsers = glob.sync("users/*.json");
@@ -469,8 +524,13 @@ function checkOverlap(date, time) {
     // Parse the existing record's date and time
     const existingDateTime = new Date(`${user.date}T${user.time}`);
 
-    // Check for date and time overlap
-    if (incomingDateTime.getTime() === existingDateTime.getTime()) {
+    // Check for date and time overlap within the same hour
+    if (
+      incomingDateTime.getFullYear() === existingDateTime.getFullYear() &&
+      incomingDateTime.getMonth() === existingDateTime.getMonth() &&
+      incomingDateTime.getDate() === existingDateTime.getDate() &&
+      incomingDateTime.getHours() === existingDateTime.getHours()
+    ) {
       return true; // Overlap found
     }
   }
@@ -479,57 +539,9 @@ function checkOverlap(date, time) {
 }
 
 
-// Function to find a user by username
-function findUserByUsername(username) {
-  const listOfUsers = glob.sync("users/*.json");
-
-  for (let i = 0; i < listOfUsers.length; i++) {
-    let user = JSON.parse(fs.readFileSync(listOfUsers[i], 'utf8'));
-    if (user.username === username) {
-      return user;
-    }
-  }
-
-  return null; // User not found
-}
-
-// Function to save the updated user information
-function saveUpdatedUser(user) {
-  const str = JSON.stringify(user, null, 2);
-  fs.writeFileSync(`users/${user.identifier}.json`, str, 'utf8');
-}
-
-// Function to modify tour date and time for a user
-function modifyTourDateAndTime(username, newDate, newTime) {
-  try {
-    // Find the user by username
-    const user = findUserByUsername(username);
-
-    if (!user) {
-      // If the user is not found, return false (modification failed)
-      return false;
-    }
-
-    // Update the user's tour date and time with the new values
-    user.date = newDate;
-    user.time = newTime;
-
-    // Save the updated user information
-    saveUpdatedUser(user);
-
-    // Return true to indicate successful modification
-    return true;
-  } catch (error) {
-    // Handle any errors that may occur during the modification process
-    console.error('Error modifying tour date and time:', error);
-    return false;
-  }
-}
-
-
 //Start the server
   app.listen(5678, () => {
-    console.log('Server is running...');
+    console.log('Server is running on port 5678...');
     console.log('Webapp:   http://localhost:5678/');
     console.log('API Docs: http://localhost:5678/api-docs');
   });
