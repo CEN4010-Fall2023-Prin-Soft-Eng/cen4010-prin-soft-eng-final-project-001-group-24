@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Date and Time Display</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: url('ye.jpg') center/cover no-repeat;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 7px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .label {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333; /* Dark text color */
+        }
+
+        .box {
+            background-color: #f2f2f7;
+            border: 1px solid #d9d9d9; /* Lighter border color */
+            border-radius: 7px;
+            padding: 20px;
+            margin: 10px;
+            height: 200px;
+            display: flex;
+            flex-direction: column; /* Align text in a column */
+            align-items: center; /* Center text horizontally */
+            justify-content: center; /* Center text vertically */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle box shadow */
+        }
+
+        .box-text {
+            font-size: 18px;
+            color: #555; /* Medium-dark text color */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="label">Date and time:</div>
+        <div class="box" id="dateBox"></div>
+        <div class="box" id="timeBox"></div>
+    </div>
+
+    <script>
+        function updateDateTime() {
+            var currentDate = new Date();
+            var optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            var optionsTime = { hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short' };
+
+            var formattedDate = currentDate.toLocaleDateString('en-US', optionsDate);
+            var formattedTime = currentDate.toLocaleTimeString('en-US', optionsTime);
+
+            document.getElementById('dateBox').innerHTML = '<div class="box-text">' + formattedDate + '</div>';
+            document.getElementById('timeBox').innerHTML = '<div class="box-text">' + formattedTime + '</div>';
+        }
+
+        // Update the date and time every second
+        setInterval(updateDateTime, 1000);
+
+        // Initial call to display date and time
+        updateDateTime();
+    </script>
+</body>
+</html>

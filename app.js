@@ -45,6 +45,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
 //just in case you want to use .env make sure to install the .env package
 //if not the api key is in the .env file for use.
+
+//Geoapify Key = GEOAPIFY_API_KEY=8e839545a466486ea818f2f8792eb92b
+
 require('dotenv').config(); // Load environment variables from a .env file
 
 const fetch = require('node-fetch');

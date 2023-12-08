@@ -7,7 +7,7 @@ const fs = require('fs');
 const glob = require('glob');
 
 const app = express();
-const PORT = process.env.PORT || 5678;
+const PORT = process.env.PORT || 5678
 
 // Initialize Parse
 Parse.initialize("qmiVcBHkyOi90FYFNs6r7e4J5beskXYTkqe85Qqm", "zgAXSRve1aW88Ck7dfO06emiorlN5KXmOrtYFuho");
@@ -29,7 +29,7 @@ const swaggerDefinition = {
   },
   servers: [
     {
-      url: `http://localhost:${PORT}`,
+      url: `http://localhost:5678`,
       description: 'Local server',
     },
   ],
@@ -43,401 +43,81 @@ const options = {
 const swaggerSpec = swaggerJSDoc(options);
 
 
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+
+
+
 // Define a route for the root path
 app.get('/', (req, res) => {
-    res.send('Welcome to the Final Project Server!');
-  });
-
-app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
-/**
- * @swagger
- * tags:
- *   name: Authentication
- *   description: Authentication endpoints
- */
-
-/**
-* @swagger
-* /login:
-*   post:
-*     tags:
-*       - Authentication
-*     summary: Log in a user
-*     requestBody:
-*       required: true
-*       content:
-*         application/json:
-*           schema:
-*             type: object
-*             properties:
-*               username:
-*                 type: string
-*               password:
-*                 type: string
-*     responses:
-*       200:
-*         description: User logged in successfully
-*       500:
-*         description: Error logging in
-*/
-app.post('/login', (req, res) => {
- const { username, password } = req.body;
-
- Parse.User.logIn(username, password)
-   .then((user) => {
-     console.log("User logged in:", user);
-     res.redirect('/home.html');
-   })
-   .catch((error) => {
-     console.error("Error logging in:", error);
-     res.status(500).send('Error logging in');
-   });
+  res.send('Welcome to the Final Project Server!');
 });
 
+
 /**
-* @swagger
-* /signup:
-*   post:
-*     tags:
-*       - Authentication
-*     summary: Sign up a new user
-*     requestBody:
-*       required: true
-*       content:
-*         application/json:
-*           schema:
-*             type: object
-*             properties:
-*               username:
-*                 type: string
-*               email:
-*                 type: string
-*               newPassword:
-*                 type: string
-*     responses:
-*       200:
-*         description: User signed up successfully
-*       500:
-*         description: Error signing up
-*/
+ * @swagger
+ * /signup:
+ *   post:
+ *     tags:
+ *       - Authentication
+ *     summary: Sign up a new user or modify tour date and time for an existing user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               date:
+ *                 type: string
+ *                 format: date
+ *               time:
+ *                 type: string
+ *                 format: time
+ *               country:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User signed up or tour date and time modified successfully
+ *       400:
+ *         description: Bad request - Duplicate username, password, date, time, or country
+ *       409:
+ *         description: Conflict - Overlapping dates or times
+ *       500:
+ *         description: Internal Server Error - Error signing up or modifying tour date and time
+ */
 app.post('/signup', (req, res) => {
- const { username, email, newPassword } = req.body;
+  const { username, password, name, date, time, country } = req.body;
 
- const user = new Parse.User();
- user.set("username", username);
- user.set("password", newPassword);
- user.set("email", email);
-
- user.signUp()
-   .then((user) => {
-     console.log("User signed up:", user);
-     res.redirect('/home.html');
-   })
-   .catch((error) => {
-     console.error("Error signing up:", error);
-     res.status(500).send('Error signing up');
-   });
-});
-
-/**
-* @swagger
-* tags:
-*   name: Favorites
-*   description: User favorites endpoints
-*/
-
-/**
-* @swagger
-* /addFavorite:
-*   post:
-*     tags:
-*       - Favorites
-*     summary: Add a favorite
-*     requestBody:
-*       required: true
-*       content:
-*         application/json:
-*           schema:
-*             type: object
-*             properties:
-*               userId:
-*                 type: string
-*               itemId:
-*                 type: string
-*     responses:
-*       200:
-*         description: Favorite added successfully
-*       500:
-*         description: Error adding favorite
-*/
-app.post('/addFavorite', (req, res) => {
- const { userId, itemId } = req.body;
-
- const Favorite = Parse.Object.extend('Favorite');
- const favorite = new Favorite();
- favorite.set('userId', userId);
- favorite.set('itemId', itemId);
-
- favorite.save()
-   .then(() => {
-     console.log('Favorite added successfully');
-     res.send('Favorite added successfully');
-   })
-   .catch((error) => {
-     console.error('Error adding favorite:', error);
-     res.status(500).send('Error adding favorite');
-   });
-});
-
-/**
-* @swagger
-* /deleteFavorite:
-*   post:
-*     tags:
-*       - Favorites
-*     summary: Delete a favorite
-*     requestBody:
-*       required: true
-*       content:
-*         application/json:
-*           schema:
-*             type: object
-*             properties:
-*               userId:
-*                 type: string
-*               itemId:
-*                 type: string
-*     responses:
-*       200:
-*         description: Favorite deleted successfully
-*       500:
-*         description: Error deleting favorite
-*/
-app.post('/deleteFavorite', (req, res) => {
- const { userId, itemId } = req.body;
-
- const Favorite = Parse.Object.extend('Favorite');
- const query = new Parse.Query(Favorite);
-
- query.equalTo('userId', userId);
- query.equalTo('itemId', itemId);
-
- query.find()
-   .then((favorites) => {
-     if (favorites.length > 0) {
-       return favorites[0].destroy();
-     } else {
-       throw new Error('Favorite not found');
-     }
-   })
-   .then(() => {
-     console.log('Favorite deleted successfully');
-     res.send('Favorite deleted successfully');
-   })
-   .catch((error) => {
-     console.error('Error deleting favorite:', error);
-     res.status(500).send('Error deleting favorite');
-   });
-});
-
-/**
-* @swagger
-* /listFavorites:
-*   get:
-*     tags:
-*       - Favorites
-*     summary: List all favorites
-*     parameters:
-*       - name: userId
-*         in: query
-*         description: ID of the user
-*         required: true
-*         schema:
-*           type: string
-*     responses:
-*       200:
-*         description: List of user favorites
-*       500:
-*         description: Error listing favorites
-*/
-app.get('/listFavorites', (req, res) => {
- const userId = req.query.userId;
-
- const Favorite = Parse.Object.extend('Favorite');
- const query = new Parse.Query(Favorite);
-
- query.equalTo('userId', userId);
-
- query.find()
-   .then((favorites) => {
-     console.log('Favorites retrieved successfully');
-     res.json(favorites);
-   })
-   .catch((error) => {
-     console.error('Error retrieving favorites:', error);
-     res.status(500).send('Error retrieving favorites');
-   });
-});
-
-/**
-* @swagger
-* tags:
-*   name: Items
-*   description: Item management endpoints
-*/
-
-/**
- * @swagger
- * /searchItems:
- *   get:
- *     tags:
- *       - Items
- *     summary: Search items
- *     parameters:
- *       - name: query
- *         in: query
- *         description: Search query
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Items matching the search query
- *       500:
- *         description: Error searching items
- */
-app.get('/searchItems', async (req, res) => {
-    try {
-      const query = req.query.query;
-  
-      // Example: Searching items in a Parse class named 'Item'
-      const Item = Parse.Object.extend('Item');
-      const itemQuery = new Parse.Query(Item);
-      itemQuery.contains('name', query); // Search by name containing the query string
-      const items = await itemQuery.find();
-  
-      res.json(items);
-    } catch (error) {
-      console.error('Error searching items:', error);
-      res.status(500).send('Error searching items');
-    }
-  });
-  
-/**
- * @swagger
- * /listItems:
- *   get:
- *     tags:
- *       - Items
- *     summary: List all items
- *     responses:
- *       200:
- *         description: List of all items
- *       500:
- *         description: Error listing items
- */
-app.get('/listItems', async (req, res) => {
-  try {
-    // Example: Listing all items from a Parse class named 'Item'
-    const Item = Parse.Object.extend('Item');
-    const itemQuery = new Parse.Query(Item);
-    const items = await itemQuery.find();
-
-    const itemList = items.map(item => ({
-      id: item.id,
-      name: item.get('name'),  // Assuming there's a field named 'name' in your 'Item' class
-      date: item.get('date'),  // Assuming there's a field named 'date' in your 'Item' class
-      time: item.get('time'),  // Assuming there's a field named 'time' in your 'Item' class
-      // Add more fields as needed
-    }));
-
-    res.status(200).json(itemList);
-  } catch (error) {
-    console.error('Error listing items:', error);
-    res.status(500).send('Error listing items');
+  // Check if user with the same attributes already exists
+  if (checkUserExists(username, password, date, time, country)) {
+    return res.status(400).send('Bad request - Duplicate username, password, date, time, or country');
   }
-});
 
-  
-/**
- * @swagger
- * /getItemDetails/{itemId}:
- *   get:
- *     tags:
- *       - Items
- *     summary: Get item details
- *     parameters:
- *       - name: itemId
- *         in: path
- *         description: ID of the item
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Item details
- *       404:
- *         description: Item not found
- *       500:
- *         description: Error getting item details
- */
-app.get('/getItemDetails/:itemId', async (req, res) => {
-  try {
-    const itemId = req.params.itemId;
-
-    // Example: Retrieving details for an item from a Parse class named 'Item'
-    const Item = Parse.Object.extend('Item');
-    const itemQuery = new Parse.Query(Item);
-    const item = await itemQuery.get(itemId);
-
-    if (!item) {
-      return res.status(404).json({ message: 'Item not found' });
-    }
-
-    const itemDetails = {
-      id: item.id,
-      name: item.get('name'),  
-      description: item.get('description'), 
-      date: item.get('date'),  
-      time: item.get('time'),  
-      
-    };
-
-    res.status(200).json(itemDetails);
-  } catch (error) {
-    console.error('Error getting item details:', error);
-    res.status(500).send('Error getting item details');
+  // Check for overlapping dates or times
+  if (checkOverlap(date, time)) {
+    return res.status(409).send('Conflict - Overlapping dates or times');
   }
-});
 
-
-  // Function to check if a historical tour setup exists
-function checkTourSetupExists(identifier) {
-  const listOfSetups = glob.sync("historical_tours/*.json");
-
-  for (let i = 0; i < listOfSetups.length; i++) {
-    let setup = JSON.parse(fs.readFileSync(listOfSetups[i], 'utf8'));
-    if (setup.identifier === identifier) {
-      return true;
-    }
-  }
-  return false;
-}
-
-// Endpoint to create a new historical tour setup
-app.post('/createTourSetup', (req, res) => {
-  const identifier = new Date().toISOString(); // Using ISO date format as the identifier
-  const { date, time, name } = req.body;
-
-  const setup = {
+  // If all checks pass, sign up the user
+  const identifier = new Date().toISOString();
+  const user = {
     identifier,
+    username,
+    password,
+    name,
     date,
     time,
-    name,
+    country
   };
 
-  const str = JSON.stringify(setup, null, 2);
-  const dir = 'historical_tours';
+  const str = JSON.stringify(user, null, 2);
+  const dir = 'users';
 
   fs.access(dir, (err) => {
     if (err) {
@@ -452,52 +132,416 @@ app.post('/createTourSetup', (req, res) => {
       console.log('Directory already exists!');
     }
 
-    if (!checkTourSetupExists(identifier)) {
-      fs.writeFile(`historical_tours/${identifier}.json`, str, (err) => {
-        if (err) {
-          return res.status(500).send({ message: 'Error creating tour setup' });
-        } else {
-          return res.status(201).send({ identifier, message: 'Tour setup created successfully' });
-        }
-      });
-    } else {
-      return res.status(200).send({ identifier, message: 'Tour setup already exists' });
+    try {
+      fs.mkdirSync('users');
+    } catch (err) {
+      if (err.code !== 'EXIST') {
+        console.error('Error creating directory:', err);
+      }
     }
+
+    fs.writeFile("users/" + username + ".json", str, (err) => {
+      if (err) {
+        console.error('Error writing to file:', err);
+        return res.status(500).send('Error signing up');
+      } else {
+        return res.status(200).send('User signed up successfully');
+      }
+    });
   });
 });
 
-// Endpoint to get details of a historical tour setup by identifier
-app.get('/getTourSetup/:identifier', (req, res) => {
-  const identifier = req.params.identifier;
+// Function to check if a user with the same information exists
+function checkUserExists(username, password, date, time, country) {
+  const userFiles = fs.readdirSync('users');
+  for (const file of userFiles) {
+    if (file.endsWith('.json')) {
+      const userData = JSON.parse(fs.readFileSync(`users/${file}`, 'utf8'));
+      if (
+        userData.username === username &&
+        userData.password === password &&
+        userData.date === date &&
+        userData.time === time &&
+        userData.country === country
+      ) {
+        return true; // User with the same information already exists
+      }
+    }
+  }
+  return false; // No user with the same information found
+}
 
-  fs.readFile(`historical_tours/${identifier}.json`, 'utf8', (err, data) => {
+// Function to check for overlapping dates or times
+function checkOverlap(date, time) {
+  const userFiles = fs.readdirSync('users');
+  const newDateTime = new Date(`${date} ${time}`);
+  
+  for (const file of userFiles) {
+    if (file.endsWith('.json')) {
+      const userData = JSON.parse(fs.readFileSync(`users/${file}`, 'utf8'));
+      
+      // Parse existing user's date and time
+      const existingDateTime = new Date(`${userData.date} ${userData.time}`);
+      
+      // Check for overlapping schedules
+      if (
+        userData.date === date && userData.time === time
+        || newDateTime >= existingDateTime && newDateTime < new Date(existingDateTime.getTime() + yourAppointmentDurationInMilliseconds)
+        || new Date(newDateTime.getTime() + yourAppointmentDurationInMilliseconds) > existingDateTime && newDateTime <= existingDateTime
+      ) {
+        return true; // Overlapping date/time found
+      }
+    }
+  }
+  
+  return false; // No overlapping date/time found
+}
+
+// Define a global variable to store user information temporarily
+let loggedInUser = null;
+
+/**
+ * @swagger
+ * /login:
+ *   post:
+ *     tags:
+ *       - Authentication
+ *     summary: Log in a user
+ *     parameters:
+ *       - name: username
+ *         description: User's username
+ *         in: formData
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: password
+ *         description: User's password
+ *         in: formData
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User logged in successfully
+ *       401:
+ *         description: Invalid username or password
+ *       500:
+ *         description: Error logging in
+ */
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+
+    // Check if the user with the given login information exists
+    const userExists = checkUserExists(username, password);
+
+    if (userExists) {
+        // User exists, set the loggedInUser variable
+        loggedInUser = getUserDetails(username, password);
+        return res.status(200).send('Login Successful');
+    } else {
+        // If the user doesn't exist, create a new user with date and time for appointment
+        const identifier = new Date().toISOString();
+        const date = "Appointment Date"; // Replace with the actual date
+        const time = "Appointment Time"; // Replace with the actual time
+
+        const user = {
+            identifier,
+            username,
+            password,
+            date,
+            time
+        };
+
+        const str = JSON.stringify(user, null, 2);
+        const dir = 'users';
+
+        fs.access(dir, (err) => {
+            if (err) {
+                fs.mkdir(dir, (err) => {
+                    if (err) {
+                        console.error(err);
+                    } else {
+                        console.log('Directory already exists!');
+                    }
+                });
+            } else {
+                console.log('Directory created successfully!');
+            }
+        });
+
+        // Set the loggedInUser variable
+        loggedInUser = user;
+
+        return res.status(200).send('Login Successful');
+    }
+});
+
+/**
+ * @swagger
+ * /logout:
+ *   post:
+ *     tags:
+ *       - Authentication
+ *     summary: Log out the current user
+ *     responses:
+ *       200:
+ *         description: User logged out successfully
+ *       401:
+ *         description: No user is currently logged in
+ */
+app.post('/logout', (req, res) => {
+    if (loggedInUser) {
+        // If a user is logged in, log them out by clearing the loggedInUser variable
+        loggedInUser = null;
+        return res.status(200).send('Logout Successful');
+    } else {
+        // No user is currently logged in
+        return res.status(401).send('No user is currently logged in');
+    }
+});
+
+ 
+
+
+/**
+ * @swagger
+ * /searchUsers:
+ *   get:
+ *     tags:
+ *       - Authentication
+ *     summary: Search for a user by username
+ *     parameters:
+ *       - name: query
+ *         in: query
+ *         description: Username to search for
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User found successfully
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Error searching for the user
+ */
+app.get('/searchUsers', async (req, res) => {
+  try {
+    const query = req.query.query;
+
+    // Read the list of users from the 'users' directory
+    const userFiles = fs.readdirSync('users');
+
+    // Find the user by username
+    const foundUser = userFiles
+      .map(file => {
+        const userData = JSON.parse(fs.readFileSync(`users/${file}`, 'utf8'));
+        return {
+          id: userData.identifier, // Assuming 'identifier' is a unique identifier for users
+          username: userData.username,
+          date: userData.date,
+          time: userData.time,
+          name: userData.name,
+          country: userData.country,
+        };
+      })
+      .find(user => user.username === query);
+
+    if (foundUser) {
+      res.status(200).json(foundUser);
+    } else {
+      res.status(404).send('User not found');
+    }
+  } catch (error) {
+    res.status(500).send('Error searching for the user');
+  }
+});
+
+
+
+  
+/**
+ * @swagger
+ * /listUsers:
+ *   get:
+ *     tags:
+ *       - Users
+ *     summary: List all users.
+ *     responses:
+ *       200:
+ *         description: Success. An array of users has been retrieved.
+ *       500:
+ *         description: Error. Internal server error occurred.
+ */
+
+let rsp_obj = {};  // Add this line to declare rsp_obj
+
+app.get('/listUsers', function (req, res) {
+  console.log("list users");
+
+  // Read the list of users from the 'users' directory
+  const userFiles = fs.readdirSync('users');
+
+  const userList = userFiles.map(file => {
+    const userData = JSON.parse(fs.readFileSync(`users/${file}`, 'utf8'));
+    return {
+      id: userData.identifier, // Assuming 'identifier' is a unique identifier for users
+      username: userData.username,
+      date: userData.date,
+      time: userData.time,
+      name: userData.name,
+      country: userData.country,
+    };
+  });
+
+  var obj = {};
+  obj.users = userList;
+
+  return res.status(200).send(obj);
+});
+
+
+/**
+ * @swagger
+ * /users/{username}:
+ *   put:
+ *     summary: Update an existing user by username.
+ *     description: Use this endpoint to update an existing user based on their username.
+ *     parameters:
+ *       - name: username
+ *         description: User's username
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: password
+ *         description: User's password
+ *         in: formData
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: date
+ *         description: User's appointment date
+ *         in: formData
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: time
+ *         description: User's appointment time
+ *         in: formData
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: country
+ *         description: User's country
+ *         in: formData
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Error. Unable to update resource.
+ *       201:
+ *         description: Success. The user has been updated.
+ *       404:
+ *         description: Error. The requested resource was not found.
+ */
+app.put('/users/:username', function (req, res) {
+  var username = req.params.username;
+  var filePath = `users/${username}.json`;
+  var obj = {
+    username: req.body.username,
+    password: req.body.password,
+    date: req.body.date,
+    time: req.body.time,
+    country: req.body.country
+  };
+  var str = JSON.stringify(obj, null, 2);
+
+  // Check if the file exists
+  fs.access(filePath, fs.constants.F_OK, function (err) {
+    var rsp_obj = {};
+
     if (err) {
-      console.error('Error getting tour setup:', err);
-      return res.status(404).send({ message: 'Tour setup not found' });
-    } else {
-      const setup = JSON.parse(data);
-      return res.status(200).send(setup);
+      // Handle case where the file doesn't exist (404)
+      rsp_obj.message = 'error - resource not found';
+      return res.status(404).send(rsp_obj);
     }
+
+    // File exists, update the user information
+    fs.writeFile(filePath, str, function (err) {
+      if (err) {
+        // Handle error (update failed)
+        rsp_obj.message = 'error - unable to update resource';
+        return res.status(200).send(rsp_obj);
+      } else {
+        // Handle success (update successful)
+        rsp_obj = {
+          message: 'successfully updated',
+          user: obj
+        };
+        return res.status(201).send(rsp_obj);
+      }
+    });
   });
 });
 
-// Endpoint to list all historical tour setups
-app.get('/listTourSetups', (req, res) => {
-  const arr = [];
-  const files = glob.sync('historical_tours/*.json');
 
-  files.forEach((file) => {
-    const data = fs.readFileSync(file, 'utf8');
-    const setup = JSON.parse(data);
-    arr.push(setup);
-  });
 
-  return res.status(200).send({ setups: arr });
-});
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function checkUserExists(username, password, date, time, country) {
+  console.log("checkUserExists");
+  const listOfUsers = glob.sync("users/*.json");
+
+  for (let i = 0; i < listOfUsers.length; i++) {
+    let user = JSON.parse(fs.readFileSync(listOfUsers[i], 'utf8'));
+    if (
+      user.username === username &&
+      user.password === password &&
+      user.date === date &&
+      user.time === time &&
+      user.country === country
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+function checkOverlap(date, time) {
+  // Get all existing user records
+  const listOfUsers = glob.sync("users/*.json");
+
+  // Parse the incoming date and time
+  const incomingDateTime = new Date(`${date}T${time}`);
+
+  // Iterate through existing records to check for overlaps
+  for (let i = 0; i < listOfUsers.length; i++) {
+    let user = JSON.parse(fs.readFileSync(listOfUsers[i], 'utf8'));
+
+    // Parse the existing record's date and time
+    const existingDateTime = new Date(`${user.date}T${user.time}`);
+
+    // Check for date and time overlap within the same hour
+    if (
+      incomingDateTime.getFullYear() === existingDateTime.getFullYear() &&
+      incomingDateTime.getMonth() === existingDateTime.getMonth() &&
+      incomingDateTime.getDate() === existingDateTime.getDate() &&
+      incomingDateTime.getHours() === existingDateTime.getHours()
+    ) {
+      return true; // Overlap found
+    }
+  }
+
+  return false; // No overlap found
+}
+
 
 //Start the server
   app.listen(5678, () => {
-    console.log('Server is running...');
+    console.log('Server is running on port 5678...');
     console.log('Webapp:   http://localhost:5678/');
     console.log('API Docs: http://localhost:5678/api-docs');
   });
