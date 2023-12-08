@@ -7,7 +7,7 @@ const fs = require('fs');
 const glob = require('glob');
 
 const app = express();
-const PORT = process.env.PORT || 5678
+const PORT = process.env.PORT || 5678;
 
 // Initialize Parse
 Parse.initialize("qmiVcBHkyOi90FYFNs6r7e4J5beskXYTkqe85Qqm", "zgAXSRve1aW88Ck7dfO06emiorlN5KXmOrtYFuho");
@@ -540,9 +540,9 @@ function checkOverlap(date, time) {
 
 
 //Start the server
-  app.listen(5678, () => {
-    console.log('Server is running on port 5678...');
-    console.log('Webapp:   http://localhost:5678/');
-    console.log('API Docs: http://localhost:5678/api-docs');
+app.listen(PORT, () =>{
+    console.log('Server is running on port ${PORT}...');
+    console.log('Webapp:   http://localhost:${PORT}/');
+    console.log('API Docs: http://localhost:${PORT}/api-docs');
   });
   
