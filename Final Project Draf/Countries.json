@@ -1,0 +1,116 @@
+{
+  "countries": [
+    {
+      "name": "United States",
+      "food": "Burgers, hot dogs, apple pie",
+      "history": "American Revolution, founding fathers",
+      "landmarks": "Statue of Liberty, Grand Canyon, White House",
+      "description": "The United States is a diverse country known for its rich history, cultural influences, and iconic landmarks.",
+      "imageUrl": "https://media.istockphoto.com/id/1471251637/photo/the-capitol-building-in-washington-d-c-usa.webp?b=1&s=170667a&w=0&k=20&c=aV6FV2Un4lQXqpsYnDeyYJ_vDZyI7rT1KE3GAEHaos4="
+    },
+    {
+      "name": "Japan",
+      "food": "Sushi, ramen, tempura",
+      "history": "Samurais, shoguns, feudal periods",
+      "landmarks": "Mount Fuji, Tokyo Tower, Kyoto temples",
+      "description": "Japan is an island nation with a unique blend of traditional culture and modern technology.",
+      "imageUrl": "https://media.istockphoto.com/id/1367522684/photo/tokyo-tower-japan-skyline.webp?b=1&s=170667a&w=0&k=20&c=7S_rPJliie42n3mNhbJyyZR1aR0qiF8IygFhwCXYrtU="
+    },
+    {
+      "name": "France",
+      "food": "Croissants, baguettes, escargot",
+      "history": "French Revolution, famous artists",
+      "landmarks": "Eiffel Tower, Louvre Museum, Notre-Dame Cathedral",
+      "description": "France is renowned for its art, cuisine, and historic landmarks, making it a global cultural hub.",
+      "imageUrl": "https://media.istockphoto.com/id/1435295372/photo/léon-valade-statue-and-footbridge-in-the-jardin-public-park-in-autumn-bordeaux.webp?b=1&s=170667a&w=0&k=20&c=MODkfzShDLwHJbr3rp7J7st6laAKW9lJ6lnKGnVzQ4s="
+    },
+    {
+      "name": "Australia",
+      "food": "Vegemite, meat pies, seafood",
+      "history": "Indigenous history, European colonization",
+      "landmarks": "Sydney Opera House, Great Barrier Reef, Ayers Rock",
+      "description": "Australia, known for its vast landscapes and unique wildlife, has a rich indigenous history alongside European colonization. Explore iconic landmarks like the Sydney Opera House and the natural wonders of the Great Barrier Reef.",
+      "imageUrl": "https://media.istockphoto.com/id/1368846553/photo/d-syd-kir-circ-quay-ferry.webp?b=1&s=170667a&w=0&k=20&c=SL_lLy-pwGZzA1r-6V5K2_vOzf147q8sZcskS3I0ViE="
+    },
+    {
+      "name": "India",
+      "food": "Curries, biryanis, dosas",
+      "history": "Ancient civilizations, Mughal Empire",
+      "landmarks": "Taj Mahal, Jaipur's palaces, Varanasi ghats",
+      "description": "India, with its vibrant culture and history, boasts ancient civilizations and the grandeur of the Mughal Empire. Visit the iconic Taj Mahal, explore Jaipur's palaces, and experience the spiritual essence of Varanasi.",
+      "imageUrl": "https://media.istockphoto.com/id/155096944/photo/taj-mahal-sunrise.webp?b=1&s=170667a&w=0&k=20&c=FcmbBA9W6ZsL5tUAsSYUK3q-0OzKukjNo_lJQY2Wlg4="
+    },
+    {
+      "name": "China",
+      "food": "Dim sum, Peking duck, noodles",
+      "history": "Great Wall, dynasties, Terracotta Army",
+      "landmarks": "Forbidden City, Zhangjiajie, Li River",
+      "description": "China, a country steeped in history and tradition, is home to the Great Wall, ancient dynasties, and the Terracotta Army. Explore the majesty of the Forbidden City, the natural wonders of Zhangjiajie, and the scenic Li River.",
+      "imageUrl": "https://media.istockphoto.com/id/526540092/photo/beautiful-modern-city-at-night-in-shanghai-china.webp?b=1&s=170667a&w=0&k=20&c=s9SgybghjYSZ_yFEAeSwiroatalGD1e3hjPFbGj85KE="
+    },
+    {
+      "name": "Brazil",
+      "food": "Feijoada, brigadeiro, açaí",
+      "history": "Portuguese colonization, Amazon rainforest",
+      "landmarks": "Christ the Redeemer, Amazon River, Iguazu Falls",
+      "description": "Brazil, with its diverse culture and landscapes, has a history shaped by Portuguese colonization and the vast Amazon rainforest. Marvel at iconic landmarks like Christ the Redeemer and the breathtaking Iguazu Falls.",
+      "imageUrl": "https://media.istockphoto.com/id/1149026089/photo/brazil-rio-de-janeiro-aerial-view-with-guanabara-bay-and-sugar-loaf-at-night.webp?b=1&s=170667a&w=0&k=20&c=055EmXNwQ79MlEII00KYVR-x35zJo_pQZZjwVcxplx0="
+    },
+    {
+      "name": "Canada",
+      "food": "Poutine, maple syrup, butter tarts",
+      "history": "Indigenous cultures, British and French influence",
+      "landmarks": "CN Tower, Banff National Park, Niagara Falls",
+      "description": "Canada, a land of natural beauty and cultural diversity, celebrates indigenous cultures alongside British and French influences. Experience iconic landmarks like the CN Tower, the stunning Banff National Park, and the majestic Niagara Falls.",
+      "imageUrl": "https://media.istockphoto.com/id/1367728341/photo/canadian-national-flag-in-ottawa.webp?b=1&s=170667a&w=0&k=20&c=a7uIwX7IaX3KICnudiJuUolVfRVhfqGmVAAtkNBzIz0="
+    },
+    {
+      "name": "Germany",
+      "food": "Bratwurst, sauerkraut, pretzels",
+      "history": "World Wars, medieval castles, Berlin Wall",
+      "landmarks": "Neuschwanstein Castle, Brandenburg Gate, Black Forest",
+      "description": "Germany, known for its rich history, medieval castles, and contributions to world events, invites exploration. Visit Neuschwanstein Castle, the iconic Brandenburg Gate, and the picturesque Black Forest.",
+      "imageUrl": "https://media.istockphoto.com/id/1414798334/photo/idyllic-landscape-in-the-alps-with-mountain-chalet-and-cows-in-springtime.webp?b=1&s=170667a&w=0&k=20&c=onSzb-JFa2_yqyQS3_KIYSLlmGuolyqgPLvn_WVVUsc="
+    },
+    {
+      "name": "South Africa",
+      "food": "Biltong, bobotie, boerewors",
+      "history": "Apartheid, Nelson Mandela, diverse cultures",
+      "landmarks": "Table Mountain, Kruger National Park, Robben Island",
+      "description": "South Africa, a land of contrasts, has a history marked by apartheid and the inspiring legacy of Nelson Mandela. Explore the beauty of Table Mountain, the wildlife of Kruger National Park, and the historical significance of Robben Island.",
+      "imageUrl": "https://media.istockphoto.com/id/620737858/photo/cape-town-and-the-12-apostels-from-above.webp?b=1&s=170667a&w=0&k=20&c=pNZcNaT4tpieEvtjqQkgc_UXdqVIwewXQ0wUSCKFVYA="
+    },
+    {
+      "name": "Italy",
+      "food": "Pizza, pasta, gelato",
+      "history": "Roman Empire, Renaissance, art and architecture",
+      "landmarks": "Colosseum, Leaning Tower of Pisa, Venice canals",
+      "description": "Italy, a cradle of civilization, is known for its rich history, art, and architecture. Immerse yourself in the grandeur of the Roman Empire, the Renaissance, and iconic landmarks like the Colosseum, the Leaning Tower of Pisa, and the enchanting Venice canals.",
+      "imageUrl": "https://media.istockphoto.com/id/1414154438/photo/panoramic-view-of-picturesque-village-manarola-cinque-terre-italy.webp?b=1&s=170667a&w=0&k=20&c=gy9gfIHe35d77C_eXuQUnM-KLsfjbmGmTvp_jcgtJuY="
+    },
+    {
+      "name": "Mexico",
+      "food": "Tacos, guacamole, churros",
+      "history": "Aztecs, Mayans, Spanish colonization",
+      "landmarks": "Chichen Itza, Mexico City, beaches",
+      "description": "Mexico, a country with a rich cultural tapestry, showcases the legacies of the Aztecs, Mayans, and Spanish colonization. Explore the wonders of Chichen Itza, the vibrancy of Mexico City, and the beauty of its beaches.",
+      "imageUrl": "https://media.istockphoto.com/id/1371304330/photo/plaza-grande-in-merida.webp?b=1&s=170667a&w=0&k=20&c=WKxwSeNFWdklOWLCmjzWEjeWIoolrjs9dR64xeAxW9c="
+    },
+    {
+      "name": "Russia",
+      "food": "Borscht, pelmeni, blini",
+      "history": "Tsars, Soviet Union, space exploration",
+      "landmarks": "Red Square, Kremlin, Trans-Siberian Railway",
+      "description": "Russia, spanning vast landscapes and history, has been home to tsars, the Soviet Union, and remarkable achievements in space exploration. Discover the cultural richness of Red Square, the grandeur of the Kremlin, and the epic journey along the Trans-Siberian Railway.",
+      "imageUrl": "https://media.istockphoto.com/id/1413498855/photo/panorama-of-moscow-kremlin-and-st-basils-cathedral-russia.webp?b=1&s=170667a&w=0&k=20&c=W6B_o2gBkiBdYnfxGemVGN-2-TjKk9geR1064Xt6CzU="
+    },
+    {
+      "name": "Spain",
+      "food": "Paella, tapas, churros",
+      "history": "Conquistadors, Moorish influence, Spanish Civil War",
+      "landmarks": "Sagrada Familia, Alhambra, Ibiza",
+      "description": "Spain, a country with a diverse history, reflects the legacies of conquistadors, Moorish influence, and the Spanish Civil War. Experience the architectural marvels of Sagrada Familia, the historical significance of the Alhambra, and the vibrant culture of Ibiza.",
+      "imageUrl": "https://media.istockphoto.com/id/1470491218/photo/aerial-view-of-the-arc-of-the-triumph-in-barcelona-spain.webp?b=1&s=170667a&w=0&k=20&c=c_O79rfsqnbvJBnWJuQVNVnsLag2BiCoTpvM2RopU_E="
+    }
+  ]
+}
