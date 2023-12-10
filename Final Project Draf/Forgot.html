@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Forgot Password</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+    <div class="login-form">
+        <div class="form-wrapper">
+
+            <form id="forgotPasswordForm" onsubmit="resetPassword(event)""> 
+
+                <input type="email" placeholder="Enter your Email" id="email" required>
+                <button type="submit">Reset Password</button>
+            </form>
+            <a href="Home.html">Back to Home</a>
+        </div>
+    </div>
+
+    <script>
+        function resetPassword(event) {
+            // Perform password reset functionality or API call here
+            event.preventDefault()
+            const email = document.getElementById('email').value;
+            console.log(email)
+
+
+
+            fetch('http://localhost:5678/resetpassword', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: email,
+
+                }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // console.log(data)
+                    console.log(data);
+                    if(data.redirectTo){
+                        window.location.href = data.redirectTo;
+                    }else{
+                        alert("Enter a valid email")
+                    }
+                }).catch((error) => console.error("Error sending request:", error))
+        }
+    </script>
+</body>
+
+</html>
