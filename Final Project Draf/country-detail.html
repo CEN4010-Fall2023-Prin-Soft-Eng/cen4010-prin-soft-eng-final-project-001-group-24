@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        Country Detail
+    </title>
+    <link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+    <div class="country-container">
+        <div class="country-wrapper">
+            <a href="Navigation.html">
+
+                <button class="back-button">Back</button>
+            </a>
+            <div class="country-details-wrapper">
+
+                <div id="country-image" class="country-image"></div>
+                <div class="country-info">
+
+                    <div class="country-desc">
+                        <h2>Name:</h2>
+                        <span id="country-name" class="country-name">
+
+                        </span>
+                    </div>
+                    <div class="country-desc">
+                        <h3>
+                            Food:
+                        </h3>
+                        <span id="country-food">
+
+                        </span>
+                    </div>
+                    <div class="country-desc">
+                        <h3>
+                            History:
+                        </h3>
+                        <span id="country-history">
+
+                        </span>
+                    </div>
+                    <div class="landmarks">
+                        <h3>
+                            Land Marks:
+                        </h3>
+                        <span id="country-landmarks">
+
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script>
+        const currentURL = window.location.href;
+        const url = currentURL.split('?');
+        const countryUrlName = url[url.length - 1];
+        const countryName = decodeURIComponent(countryUrlName);
+        // let country = {};
+        console.log(countryName)
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchData();
+        });
+
+        async function fetchData() {
+            try {
+                const response = await fetch("Countries.json");
+                const data = await response.json();
+                // const countries = data.countries;
+                const country = data.countries.find(c => c.name === countryName);
+                if (country) {
+                    console.log('Country Info:', country)
+                    const countryName = document.getElementById('country-name')
+                    const countryFood = document.getElementById('country-food');
+                    const countryImage = document.getElementById('country-image');
+                    const countryHistory = document.getElementById("country-history");
+                    const countryLandmarks = document.getElementById('country-landmarks');
+                    // console.log(country.history)
+                    countryName.innerText = country.name;
+                    countryFood.innerText = country.food;
+                    countryImage.innerHTML = `<img src=${country.imageUrl} name = ${country.name}/>`;
+                    countryHistory.innerText = country.history;
+                    countryLandmarks.innerText = country.landmarks;
+                } else {
+                    alert("Country Details not found!")
+                }
+            } catch (error) {
+                console.error("Error fetching countries:", error);
+            }
+        }
+
+        // console.log(country)
+
+
+
+
+
+
+    </script>
+</body>
+
+</html>
