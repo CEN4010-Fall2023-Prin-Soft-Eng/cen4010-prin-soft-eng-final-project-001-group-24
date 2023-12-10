@@ -33,7 +33,7 @@ The main focus of this app being convience and helpfulness will drive developmen
 MIT
 
 # The app is available for download and use
-- Link to download [Map Companion App](https://we.tl/t-SRgVKYx2pc) 
+- Link to download [Map Companion App]([https://we.tl/t-SRgVKYx2pc](https://we.tl/t-8qxYgXtqXV)) 
 - Link to Website: 
 
 # Workload
