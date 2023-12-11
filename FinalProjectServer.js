@@ -5,6 +5,8 @@ const swaggerJSDoc = require('swagger-jsdoc');
 const swaggerUI = require('swagger-ui-express');
 const fs = require('fs');
 const glob = require('glob');
+const nodemailer = require('nodemailer');
+
 
 const app = express();
 const PORT = process.env.PORT || 5678;
@@ -12,6 +14,9 @@ const PORT = process.env.PORT || 5678;
 // Initialize Parse
 Parse.initialize("qmiVcBHkyOi90FYFNs6r7e4J5beskXYTkqe85Qqm", "zgAXSRve1aW88Ck7dfO06emiorlN5KXmOrtYFuho");
 Parse.serverURL = "https://parseapi.back4app.com/";
+
+// Read user data from the "users.json" file
+let users = [];
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -44,6 +49,15 @@ const swaggerSpec = swaggerJSDoc(options);
 
 
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+
+// Replace these with your own email configuration
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'your-email@gmail.com',
+    pass: 'your-email-password',
+  },
+});
 
 
 
@@ -81,6 +95,13 @@ app.get('/', (req, res) => {
  *                 format: time
  *               country:
  *                 type: string
+ *               gmail:
+ *                 type: object
+ *                 properties:
+ *                   address:
+ *                     type: string
+ *                   password:
+ *                     type: string
  *     responses:
  *       200:
  *         description: User signed up or tour date and time modified successfully
@@ -92,10 +113,10 @@ app.get('/', (req, res) => {
  *         description: Internal Server Error - Error signing up or modifying tour date and time
  */
 app.post('/signup', (req, res) => {
-  const { username, password, name, date, time, country } = req.body;
+  const { username, password, name, date, time, country, gmail } = req.body;
 
   // Check if user with the same attributes already exists
-  if (checkUserExists(username, password, date, time, country)) {
+  if (checkUserExists(username, password, date, time, country, gmail)) {
     return res.status(400).send('Bad request - Duplicate username, password, date, time, or country');
   }
 
@@ -113,7 +134,8 @@ app.post('/signup', (req, res) => {
     name,
     date,
     time,
-    country
+    country,
+    gmail
   };
 
   const str = JSON.stringify(user, null, 2);
@@ -152,7 +174,7 @@ app.post('/signup', (req, res) => {
 });
 
 // Function to check if a user with the same information exists
-function checkUserExists(username, password, date, time, country) {
+function checkUserExists(username, password, date, time, country, gmail) {
   const userFiles = fs.readdirSync('users');
   for (const file of userFiles) {
     if (file.endsWith('.json')) {
@@ -162,7 +184,8 @@ function checkUserExists(username, password, date, time, country) {
         userData.password === password &&
         userData.date === date &&
         userData.time === time &&
-        userData.country === country
+        userData.country === country &&
+        JSON.stringify(userData.gmail) === JSON.stringify(gmail)
       ) {
         return true; // User with the same information already exists
       }
@@ -196,6 +219,7 @@ function checkOverlap(date, time) {
   
   return false; // No overlapping date/time found
 }
+
 
 // Define a global variable to store user information temporarily
 let loggedInUser = null;
@@ -483,6 +507,88 @@ app.put('/users/:username', function (req, res) {
         return res.status(201).send(rsp_obj);
       }
     });
+  });
+});
+
+
+// Password reset request endpoint
+/**
+ * @openapi
+ * /resetpassword:
+ *   post:
+ *     summary: Request password reset
+ *     description: Sends a password reset email to the user's email address.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password reset email sent
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Password reset email sent
+ *               redirectTo: http://your-frontend-app/success-page
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: User not found
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Internal server error
+ */
+
+// Password reset request endpoint
+app.post('/resetpassword', (req, res) => {
+  const { email } = req.body;
+
+  // Find the user based on the provided email
+  const userFiles = fs.readdirSync('users');
+  const user = userFiles
+    .map((file) => JSON.parse(fs.readFileSync(`users/${file}`, 'utf8')))
+    .find((u) => u.email === email);
+
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+
+  // Generate a unique token (you can use a library like uuid for this)
+  const token = crypto.randomBytes(20).toString('hex');
+
+  // Save the token to the user's record in the "users" folder
+  user.resetToken = token;
+
+  // Write the updated user data back to the user's JSON file
+  fs.writeFileSync(`users/${user.username}.json`, JSON.stringify(user, null, 2));
+
+  // Send a password reset email to the user
+  const resetLink = `http://your-frontend-app/reset-password?token=${token}`;
+
+  const mailOptions = {
+    from: 'your-email@gmail.com',
+    to: user.email,
+    subject: 'Password Reset Request',
+    html: `<p>Click the following link to reset your password:</p><a href="${resetLink}">${resetLink}</a>`,
+  };
+
+  transporter.sendMail(mailOptions, (error) => {
+    if (error) {
+      console.error('Error sending password reset email:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+
+    return res.status(200).json({ message: 'Password reset email sent', redirectTo: 'http://your-frontend-app/success-page' });
   });
 });
 
