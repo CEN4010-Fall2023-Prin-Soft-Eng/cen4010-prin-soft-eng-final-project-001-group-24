@@ -7,7 +7,6 @@ const fs = require('fs');
 const glob = require('glob');
 const nodemailer = require('nodemailer');
 
-
 const app = express();
 const PORT = process.env.PORT || 5678;
 
@@ -96,12 +95,11 @@ app.get('/', (req, res) => {
  *               country:
  *                 type: string
  *               gmail:
- *                 type: object
- *                 properties:
- *                   address:
- *                     type: string
- *                   password:
- *                     type: string
+ *                 type: string
+ *                
+ *                   
+ *                    
+ * 
  *     responses:
  *       200:
  *         description: User signed up or tour date and time modified successfully
@@ -244,6 +242,15 @@ let loggedInUser = null;
  *         required: true
  *         schema:
  *           type: string
+ * 
+ *       - name: gmail
+ *         description: User's gmail
+ *         in: formData
+ *         required: true
+ *         schema:
+ *           type: string
+ * 
+ * 
  *     responses:
  *       200:
  *         description: User logged in successfully
@@ -511,7 +518,6 @@ app.put('/users/:username', function (req, res) {
 });
 
 
-// Password reset request endpoint
 /**
  * @openapi
  * /resetpassword:
@@ -527,6 +533,7 @@ app.put('/users/:username', function (req, res) {
  *             properties:
  *               email:
  *                 type: string
+ *                 description: The email address of the user requesting a password reset.
  *     responses:
  *       200:
  *         description: Password reset email sent
@@ -548,6 +555,7 @@ app.put('/users/:username', function (req, res) {
  *             example:
  *               message: Internal server error
  */
+
 
 // Password reset request endpoint
 app.post('/resetpassword', (req, res) => {
@@ -647,8 +655,8 @@ function checkOverlap(date, time) {
 
 //Start the server
 app.listen(PORT, () =>{
-    console.log('Server is running on port ${PORT}...');
-    console.log('Webapp:   http://localhost:${PORT}/');
-    console.log('API Docs: http://localhost:${PORT}/api-docs');
+    console.log('Server is running on port 5678...');
+    console.log('Webapp:   http://localhost:5678/');
+    console.log('API Docs: http://localhost:5678/api-docs');
   });
   
