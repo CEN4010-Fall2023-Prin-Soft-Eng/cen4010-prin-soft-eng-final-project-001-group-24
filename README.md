@@ -26,14 +26,13 @@ The main focus of this app being convience and helpfulness will drive developmen
 # Details
 - The Map Companion App integrates the [GeoApify](https://www.geoapify.com/places-api) API in order to increase the amount of information available to the user and expand on the point of interest.
 - Contains multiple dependecies needed to run such as express, Swagger, .env and more.
-- The app is currently being deployed using [Heroku](https://developer.salesforce.com) and has been assembled using [JustInMind](https://www.justinmind.com/?k=justinmind&a=295677078132&adg=23874442871&cmp=323175791&match=e&adposition=&utm_medium=cpc&utm_source=google&utm_campaign=323175791&utm_term=justinmind_e&gad_source=1&gclid=CjwKCAiA98WrBhAYEiwA2WvhOhFfT8isVP3FyOw_0Xm1bnbZ_-3wzuYOWsIC9_ved-UaY5OIRbKXyxoC_qsQAvD_BwE).
+- The app is currently being deployed using [vercel](https://vercel.com/home) and has been assembled using [JustInMind](https://www.justinmind.com/?k=justinmind&a=295677078132&adg=23874442871&cmp=323175791&match=e&adposition=&utm_medium=cpc&utm_source=google&utm_campaign=323175791&utm_term=justinmind_e&gad_source=1&gclid=CjwKCAiA98WrBhAYEiwA2WvhOhFfT8isVP3FyOw_0Xm1bnbZ_-3wzuYOWsIC9_ved-UaY5OIRbKXyxoC_qsQAvD_BwE).
 
 
 # License
 MIT
 
-# The app is available for download and use
-- Link to download [Map Companion App](https://we.tl/t-SRgVKYx2pc) 
+# The app is available for use
 - Link to Website: 
 
 # Workload
